@@ -305,14 +305,14 @@ int main(int argc, char *argv[])
 	ioctl(serial_fd, TIOCMBIS, &f);
 	msglen=0;
 
-	shm_out=attach_shm(0);
+	shm_out=attach_shm(shmunit);
 	if (!shm_out) {
 		fprintf(stderr,"Error attaching to the ntp shm\n");
 		close(serial_fd);
 		return 0;
 	}
 
-	shm_nmea=attach_nmea_shm(0);
+	shm_nmea=attach_nmea_shm(shmunit);
 	if (!shm_nmea) {
 		fprintf(stderr,"Error attaching to the nmea shm\n");
 		close(serial_fd);
