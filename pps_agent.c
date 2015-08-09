@@ -16,11 +16,12 @@
 #include <getopt.h>
 
 #include "ntpshm.h"
+#include "daemonize.h"
 
 #include <sys/timepps.h>
 
 //adjustment for pps. If pps is delayed 1ms relative to UTC-PPS, the value should be +1000.
-int clkadd_ns=100000;
+int clkadd_ns=0;
 char path[256]="/dev/pps0";
 int edge=1;
 int shmunit_out=1;
@@ -156,6 +157,9 @@ int main(int argc, char *argv[])
                 fprintf(stderr,"Error attaching to the output shm\n");
                 return 0;
         }
+        
+        if (!debug)
+		daemonize();
 
 	for (;;) {
 		//get the pps event

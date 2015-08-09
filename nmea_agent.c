@@ -18,14 +18,14 @@
 
 #include "ntpshm.h"
 #include "nmeashm.h"
-
+#include "daemonize.h"
 
 
 
 
 char portname[256]="/dev/ttyS0";
 unsigned baudrate=9600;
-int clkadd_us=114000;
+int clkadd_us=300000;
 unsigned shmunit=0;
 unsigned microsec_per_byte;
 
@@ -319,6 +319,10 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+	if (!debug)
+		daemonize();
+
+
 	last_reported_time=0;
 	last_reported_usec=0;
 
@@ -496,7 +500,7 @@ restart_loop:
 						}
 						//if the receiver is not banned, report
 						if ((!ban_timer)&&(!startupblanker)) {
-							set_shm_ns( shm_out, rmc_tv.tv_sec, rmc_tv.tv_usec*1000,  last_reported_time, last_reported_usec*1000,   2);
+							set_shm_ns( shm_out, rmc_tv.tv_sec, rmc_tv.tv_usec*1000,  last_reported_time, last_reported_usec*1000,   1);
 							if (debug>1)
 								printf("$PPPPP,%i,%i,%i,%f\n",i,rmc_tv.tv_sec, i-rmc_tv.tv_sec,err);
 								
