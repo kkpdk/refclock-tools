@@ -231,54 +231,54 @@ retrypps:
 				if (debug)
 					printf("coarse adder: %i s + %i ns\n",ofs_s,ofs_ns);
 			}
-		}
 shm_collision:
-		if (ofs_good) {
-			//calculate the pps time according to the refclock
-			clk_s=ofs_s+ppstime.tv_sec;
-			clk_ns=ofs_ns+ppstime.tv_nsec;
-			while (clk_ns<-500000000) {
-				clk_ns+=1000000000;
-				clk_s-=1;
-			}
-			while (clk_ns>=500000000) {
-				clk_ns-=1000000000;
-				clk_s+=1;
-			}
-			//track the pulse so we can coast without reference.
-			if (clk_ns>10000000) ofs_ns-=10000000;
-			else
-			if (clk_ns<-10000000) ofs_ns+=10000000;
-			else
-				ofs_ns-=clk_ns >>4; //if <10ms, lowpass filter. It looks neat, not really needed.
-			//handle overflow/underflow in the integer second tracking
-			if (ofs_ns<=-1000000000) {
-				ofs_ns+=1000000000;
-				ofs_s-=1;
-			}
-			if (ofs_ns>0) {
-				ofs_ns-=1000000000;
-				ofs_s+=1;
-			}
-			//clk_s is the second number. clk_ns is defined as 0 at this point.
+			if (ofs_good) {
+				//calculate the pps time according to the refclock
+				clk_s=ofs_s+ppstime.tv_sec;
+				clk_ns=ofs_ns+ppstime.tv_nsec;
+				while (clk_ns<-500000000) {
+					clk_ns+=1000000000;
+					clk_s-=1;
+				}
+				while (clk_ns>=500000000) {
+					clk_ns-=1000000000;
+					clk_s+=1;
+				}
+				//track the pulse so we can coast without reference.
+				if (clk_ns>10000000) ofs_ns-=10000000;
+				else
+				if (clk_ns<-10000000) ofs_ns+=10000000;
+				else
+					ofs_ns-=clk_ns >>4; //if <10ms, lowpass filter. It looks neat, not really needed.
+				//handle overflow/underflow in the integer second tracking
+				if (ofs_ns<=-1000000000) {
+					ofs_ns+=1000000000;
+					ofs_s-=1;
+				}
+				if (ofs_ns>0) {
+					ofs_ns-=1000000000;
+					ofs_s+=1;
+				}
+				//clk_s is the second number. clk_ns is defined as 0 at this point.
+				
+				//leapsecond code would go here, but is not needed nor wanted:
+				//When leapsecond occurs, the system clock is adjusted 1 second.
+				//This means that the integer part of the PPS loop ALSO shifts 1 second.
+				//So, we must not handle leap seconds, ntpd or such will do that,
+				//provided it is running. If it not running, the first update from the coarse
+				//reference will correct it.
 			
-			//leapsecond code would go here, but is not needed nor wanted:
-			//When leapsecond occurs, the system clock is adjusted 1 second.
-			//This means that the integer part of the PPS loop ALSO shifts 1 second.
-			//So, we must not handle leap seconds, ntpd or such will do that,
-			//provided it is running. If it not running, the first update from the coarse
-			//reference will correct it.
-			
-			//add clkadd to compensate for propagation delays
-			clk_ns=clkadd_ns;
-			//and normalize
-			while (clk_ns<0) {
-				clk_ns+=1000000000;
-				clk_s-=1;
+				//add clkadd to compensate for propagation delays
+				clk_ns=clkadd_ns;
+				//and normalize
+				while (clk_ns<0) {
+					clk_ns+=1000000000;
+					clk_s-=1;
+				}
+				if (debug)
+					printf("rxtime= %i.%09i  clock= %i.%09i\n",ppstime.tv_sec,ppstime.tv_nsec,  clk_s,clk_ns);
+				set_shm_ns(shm_out,ppstime.tv_sec,ppstime.tv_nsec,clk_s,clk_ns, 20);
 			}
-			if (debug)
-				printf("rxtime= %i.%09i  clock= %i.%09i\n",ppstime.tv_sec,ppstime.tv_nsec,  clk_s,clk_ns);
-			set_shm_ns(shm_out,ppstime.tv_sec,ppstime.tv_nsec,clk_s,clk_ns, 20);
 		}
 	}
 	return 0;
